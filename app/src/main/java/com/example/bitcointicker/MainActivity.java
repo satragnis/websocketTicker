@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
          myApplication = (MyApplication) Objects.requireNonNull(getApplicationContext());
+        myApplication.connectSocket();
         init();
     }
 
@@ -78,9 +79,10 @@ public class MainActivity extends AppCompatActivity {
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
         }
-        myApplication.connectSocket();
-        myApplication.subscribeTo(WebSocketEvents.BLOCK_SUB);
-        myApplication.subscribeTo(WebSocketEvents.UNCONFIRMED_TSUB);
+        if(myApplication.isSocketConnected()) {
+            myApplication.subscribeTo(WebSocketEvents.BLOCK_SUB);
+            myApplication.subscribeTo(WebSocketEvents.UNCONFIRMED_TSUB);
+        }
     }
 
 
@@ -108,37 +110,45 @@ public class MainActivity extends AppCompatActivity {
 
             case WebSocketEvents.BLOCK_SUB:
                 Block block = messageEvent.getBlock();
-                blockHash.setText(getResources().getString(R.string.block_hash_label)+" - "+block.getHash());
-                blockHeight.setText(getResources().getString(R.string.block_height_label)+" - "+block.getHeight());
-                totalBTC.setText(getResources().getString(R.string.total_btc_sent_label)+" - "+String.format("%. 6f",block.getTotalBTCSent()));
-                reward.setText(getResources().getString(R.string.reward_label)+" - "+String.format("%. 6f",block.getReward()));
+                parseAndUpdateBlock(block);
                 break;
             case WebSocketEvents.UNCONFIRMED_TSUB:
                 Transaction transaction = messageEvent.getTransaction();
-                String hash = transaction.getX().getHash();
-                Long time = transaction.getX().getTime();
-                List<Transaction.Input> inputs = transaction.getX().getInputs();
-                Long amount =0L;
-                for (Transaction.Input input:inputs
-                     ) {
-                    amount = amount+input.getPrevOut().getValue();
-                }
-                DisplayTransaction displayTransaction = new DisplayTransaction(time,amount,hash);
-                Log.d("??", "onMessageEvent: "+i);
-                if(i<=5) {
-                    displayTransactions.add(i,displayTransaction);
-                    i++;
-                    Log.d("??", "onMessageEvent: "+i);
-                }else{
-                    i=0;
-                }
-                mAdapter.notifyDataSetChanged();
+                parseAndUpdateTransactions(transaction);
                 break;
             case WebSocketEvents.SOCKET_INFO:
                 socketStatus.setText("Socket Status:" + messageEvent.getSocketState());
                 break;
 
         }
+    }
+
+    private void parseAndUpdateBlock(Block block) {
+        blockHash.setText(getResources().getString(R.string.block_hash_label)+" - "+block.getHash());
+        blockHeight.setText(getResources().getString(R.string.block_height_label)+" - "+block.getHeight());
+        totalBTC.setText(getResources().getString(R.string.total_btc_sent_label)+" - "+String.format("%. 6f",block.getTotalBTCSent()));
+        reward.setText(getResources().getString(R.string.reward_label)+" - "+String.format("%. 6f",block.getReward()));
+    }
+
+    private void parseAndUpdateTransactions(Transaction transaction) {
+        String hash = transaction.getX().getHash();
+        Long time = transaction.getX().getTime();
+        List<Transaction.Input> inputs = transaction.getX().getInputs();
+        Long amount =0L;
+        for (Transaction.Input input:inputs
+        ) {
+            amount = amount+input.getPrevOut().getValue();
+        }
+        DisplayTransaction displayTransaction = new DisplayTransaction(time,amount,hash);
+        Log.d("??", "onMessageEvent: "+i);
+        if(i<=5) {
+            displayTransactions.add(i,displayTransaction);
+            i++;
+            Log.d("??", "onMessageEvent: "+i);
+        }else{
+            i=0;
+        }
+        mAdapter.notifyDataSetChanged();
     }
 
 

@@ -12,6 +12,11 @@ public class MyApplication extends Application {
         socketConnection.connectSocket(getApplicationContext());
     }
 
+    public boolean isSocketConnected() {
+        socketConnection = getDefault();
+      return   socketConnection.isSocketConnected();
+    }
+
 
 
     public void subscribeTo(String eventType) {
