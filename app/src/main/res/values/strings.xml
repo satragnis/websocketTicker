@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">BitcoinTicker</string>
+    <string name="block_hash_label">Block hash</string>
+    <string name="block_height_label">Block height</string>
+    <string name="total_btc_sent_label">Total BTC sent</string>
+    <string name="reward_label">Reward</string>
+    <string name="socket_status_default">Socket status</string>
+    <string name="clear_transactions_label">Clear Transactions</string>
+    <string name="time">Time</string>
+    <string name="amount_satoshi_label">Amount(Satoshi)</string>
+</resources>
